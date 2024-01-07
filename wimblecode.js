@@ -16,29 +16,30 @@ const createMatch = (name1, name2) => {
         game: 0
     }
 
-    let deuce = false //Variable que define si hay empate 40-40
+    //Variable que define si hay empate 40-40
+    let deuce = false
 
     const pointWonBy = (player = '0') => {
         /*
-        Primero verifico que se asigno un valor valido plara 'player'. En caso que no sea asi, envio un texto 
+        Primero verifico que se asigno un valor valido para 'player'. En caso que no sea asi, envio un texto 
         informando de esto (por el momento no tengo ningun metodo que capte este mensaje).
-        Luego asigno el punto, verifico que no haya empate y verifico si no se gano la ronda
+        Luego asigno el punto al jugador correspondiente, verifico que no haya empate y verifico si gano la ronda
         */
         if (player !== '1' && player !== '2') {
-            return 'Ingrese valor valido (player "1" o "2")'
+            return 'ERROR!. Valor no valido.'
         }
         else if (player === '1') {
             player1.point += 1
             isDeuce()
             if (asWinnerRound(player1) != undefined){
-                return asWinnerRound(player1)
+                return player1.name
             }
         }
         else {
             player2.point += 1
             isDeuce()
             if (asWinnerRound(player2) != undefined){
-                return asWinnerRound(player2)
+                return player2.name
             }
         }
     }
@@ -68,6 +69,9 @@ const createMatch = (name1, name2) => {
     }
 
     const getWinner = (player) => {
+        /*
+        Muestro por pantalla y retorno el nombre del jugador vencedor
+        */
         console.log (player.name + ' WIN MATCH!!!')
         return player.name
     }
@@ -75,19 +79,19 @@ const createMatch = (name1, name2) => {
 // ----------------------- Metodos internos ------------------------
 
     const asWinnerRound = (player) => {
-        /*
+        /* 
         Primero verifico que el jugador tenga por lo menos 4 puntos (mas de 40) y que no haya empate.
         Luego verifico que la diferencia sea por lo menos 2.
-        Increento la variable round, muestro el ganador de la ronda, reseteo la variable Points
+        Incremento la variable round, muestro el ganador de la ronda, reseteo la variable 'point' de ambos jugadores
         y finalmente verifico si gano el juego
         */
         if (player.point >= 4 && !deuce) {
-            if((player1.point - player2.point) > 1) {
+            if(Math.abs(player1.point - player2.point) > 1) {
                 player.round += 1
                 console.log (player.name + ' Round win')
                 resetPoints()
                 if (asWinnerGame (player) != undefined) {
-                    return asWinnerGame (player)
+                    return player.name
                 }
             }
         }
@@ -95,21 +99,24 @@ const createMatch = (name1, name2) => {
 
     const asWinnerGame = (player) => {
         /*
-        Similar a 'asWinnerRound' con la diferencia que reseteo la variable 'round' tambien */
-        if (player.round >= 4 && ((player1.round - player2.round) > 1)) {
+        Similar a 'asWinnerRound()' con la diferencia que reseteo la variable 'round' tambien
+        */
+        if (player.round >= 4 && (Math.abs(player1.round - player2.round) > 1 || player.round === 7)) {
                 player.game += 1
                 console.log (player.name + ' Game win')
                 resetPoints()
                 resetRounds()
+                //Si el metodo 'asWinnerMatch()' devuelve un valor (string), significa que player gano el partido. Retorno el nombre
                 if (asWinnerMatch (player) != undefined) {
-                    return asWinnerMatch (player)
+                    return player.name
                 }
         }
     }
 
     const asWinnerMatch = (player) => {
-        /*Si el jugador tiene 2 puntos, gana la partida. Muestro por consola en caso de que sea vencedor */
-        // player.game === 2 ? win(player) : ''
+        /*
+        Si el jugador tiene 2 puntos, gana la partida. Muestro por consola en caso de que sea vencedor
+        */
         if (player.game === 2){
             return win (player)
         }
@@ -131,6 +138,9 @@ const createMatch = (name1, name2) => {
     }
 
     const win = (player) => {
+        /*
+        Mostramos por pantalla al ganador, reseteamos las variables y retornamos el nombre
+        */
         const playerName = getWinner(player)
         resetAll ()
         return playerName
@@ -152,13 +162,23 @@ const createMatch = (name1, name2) => {
 const randomPoint = () => Math.floor(Math.random() * 2) +1
 
 const play_Off = () => {
+    /*
+    Con un bucle iterativo juego las 2 semifinales para saber quien gana. Con los vencedores de dichas llaves
+    creo el tercer partido (Final)
+    */
+    
     //llave de las semifinales
     const keys = [createMatch ('Alberto C.', 'David J.'), createMatch ('Javier M.', 'Edu Aguilar')]
 
+    //varable para almacenar nombre de vencedores
     let keyWins = []
+    //Variable booleana para saber cuando hay un ganador
+    let win 
 
+    //bucle para jugar los 2 partidos de la semifinal
     for (let i=0; i < 2; i++) {
-        let win = false
+        win = false
+        //bucle que se repite hasta que haya un ganador
         while (!win) {
             let playerWin = keys[i].pointWonBy(randomPoint().toString()) 
             if (playerWin != undefined){
@@ -168,77 +188,17 @@ const play_Off = () => {
         }
     }
 
-    let win = false
-    while (win) {
-        let playerWin = key_1.pointWonBy(randomPoint().toString()) 
+    //Bucle de la final
+    win = false
+    const final = createMatch (keyWins[0], keyWins[1])
+    while (!win) {
+        let playerWin = final.pointWonBy(randomPoint().toString()) 
         if (playerWin != undefined){
             win = true
         }
     }
 }
 
+
+//Llamo a la funcion para que se juegue el torneo
 play_Off()
-
-/*
-____________________PRUEBA RUDIMENTARIA XD___________________________________
-
-const nuevoMatch = createMatch ('Messi', 'CR7')
-
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('2') 
-nuevoMatch.pointWonBy('2') 
-nuevoMatch.pointWonBy('2') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-console.log (nuevoMatch.getCurrentRoundScore()) // Messi 40 - 40 CR7
-nuevoMatch.pointWonBy('1') 
-console.log (nuevoMatch.getCurrentRoundScore()) // Messi (ventaja) - 40 CR7
-nuevoMatch.pointWonBy('2') 
-console.log (nuevoMatch.getCurrentRoundScore()) // Messi (deuce) - (deuce) CR7
-nuevoMatch.pointWonBy('1') 
-console.log (nuevoMatch.getCurrentRoundScore()) // Messi (ventaja) - 40 CR7
-nuevoMatch.pointWonBy('1') 
-console.log (nuevoMatch.getCurrentRoundScore()) // Messi 0 - 0 CR7
-
-console.log ('ROUND SCORE: ')
-console.log (nuevoMatch.getRoundsScore()) //ROUNDS... Messi 1 - 0 CR7
-
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1')
-
-console.log (nuevoMatch.getRoundsScore())
-
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1')
-
-console.log (nuevoMatch.getCurrentRoundScore())
-console.log (nuevoMatch.getRoundsScore())
-console.log (nuevoMatch.getMatchScore())
-
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1')
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1')
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1') 
-nuevoMatch.pointWonBy('1')
-*/
